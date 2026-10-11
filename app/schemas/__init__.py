@@ -1,0 +1,3 @@
+"""
+NaviStudo Backend - Schemas package.
+"""

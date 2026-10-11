@@ -1,0 +1,3 @@
+"""
+NaviStudo Backend - Integrations package.
+"""
