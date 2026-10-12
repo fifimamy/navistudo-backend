@@ -18,13 +18,12 @@ from app.schemas.recommendation_schema import (
 from app.services.recommendation_service import (
     RecommendationService,
     StudentNotFoundError,
-    FirebaseError as ServiceFirebaseError,
+    FirebaseError,
     ModelOneError,
     ModelTwoError,
     ValidationError,
+    ServiceNotImplementedError,
 )
-from app.services.student_service import StudentService
-from app.services.knowledge_base_service import KnowledgeBaseService
 from app.integrations.model_one import ModelOneClient
 from app.integrations.model_two import ModelTwoClient
 
@@ -158,7 +157,7 @@ def create_recommendation():
         result = service.create_recommendation(student_uid)
     except StudentNotFoundError as e:
         raise NotFound(str(e))
-    except (ServiceFirebaseError, FirebaseConfigError) as e:
+    except (FirebaseError, FirebaseConfigError) as e:
         # Firebase configuration or connection error
         raise Unauthorized("Database service unavailable") from e
     except ModelOneError as e:
@@ -185,8 +184,8 @@ def create_recommendation():
             details={"reason": str(e)},
         )
         return jsonify(error_response.model_dump()), 500
-    except NotImplementedError as e:
-        # Explicitly catch NotImplementedError from unimplemented services
+    except ServiceNotImplementedError as e:
+        # Explicitly catch ServiceNotImplementedError from unimplemented services
         error_response = RecommendationErrorResponse(
             error="not_implemented",
             message="Required backend component not yet implemented",

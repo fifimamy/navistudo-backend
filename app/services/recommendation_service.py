@@ -15,13 +15,21 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from app.integrations.model_one import ModelOneClient, ModelOneError
-from app.integrations.model_two import ModelTwoClient, ModelTwoError
+from app.integrations.model_one import ModelOneClient
+from app.integrations.model_two import ModelTwoClient
 from app.schemas.model_one_schema import ModelOneInput, ModelOneOutput
 from app.schemas.model_two_schema import ModelTwoInput, ModelTwoOutput, RecommendationOption
 from app.services.knowledge_base_service import KnowledgeBaseService, RecommendationType
-from app.services.student_service import StudentService, StudentNotFoundError
+from app.services.student_service import StudentService
 from app.integrations.firebase_client import FirebaseClient, FirebaseAuthError, FirebaseConfigError
+from app.exceptions import (
+    StudentNotFoundError,
+    FirebaseError,
+    ValidationError,
+    ModelOneError,
+    ModelTwoError,
+    ServiceNotImplementedError,
+)
 
 
 @dataclass
@@ -164,7 +172,7 @@ class RecommendationService:
             RecommendationResult if found and owned by student, None otherwise.
         """
         # TODO: Implement when Firebase schema for results is confirmed
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "RecommendationService.get_recommendation not yet implemented. "
             "Waiting for results collection schema confirmation."
         )
@@ -223,31 +231,7 @@ class RecommendationService:
         # TODO: Implement when results collection schema is confirmed
         # Expected: write to 'recommendations' collection with analysis_id as document ID
         # Include student_uid for ownership verification
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "RecommendationService._save_result not yet implemented. "
             "Waiting for results collection schema confirmation."
         )
-
-
-class FirebaseError(Exception):
-    """Base exception for Firebase-related errors in the recommendation service."""
-
-    pass
-
-
-class ValidationError(Exception):
-    """Raised when Model 2 output validation fails."""
-
-    pass
-
-
-class ModelOneError(Exception):
-    """Raised when Model 1 processing fails."""
-
-    pass
-
-
-class ModelTwoError(Exception):
-    """Raised when Model 2 processing fails."""
-
-    pass

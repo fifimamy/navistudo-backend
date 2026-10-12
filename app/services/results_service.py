@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 from app.integrations.firebase_client import FirebaseClient
+from app.exceptions import FirebaseError, ServiceNotImplementedError
 
 
 @dataclass
@@ -47,7 +48,7 @@ class ResultsService:
         # Expected:
         # doc_ref = self._firebase.db.collection(self._collection).document(result.analysis_id)
         # doc_ref.set(result.__dict__)
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "ResultsService.save not yet implemented. "
             "Waiting for Firebase results collection schema confirmation."
         )
@@ -72,7 +73,7 @@ class ResultsService:
         # data = doc.to_dict()
         # if data.get("student_uid") != student_uid: return None
         # return StoredRecommendationResult(**data)
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "ResultsService.get not yet implemented. "
             "Waiting for Firebase results collection schema confirmation."
         )
@@ -88,15 +89,7 @@ class ResultsService:
             List of results, most recent first.
         """
         # TODO: Implement when Firebase schema is confirmed
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "ResultsService.list_for_student not yet implemented. "
             "Waiting for Firebase results collection schema confirmation."
         )
-
-
-class FirebaseError(Exception):
-    """Raised when Firebase operations fail."""
-
-    def __init__(self, message: str, original_error: Exception | None = None):
-        self.original_error = original_error
-        super().__init__(message)

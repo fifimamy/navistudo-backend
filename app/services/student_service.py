@@ -7,6 +7,8 @@ Handles retrieval and validation of student profiles from Firebase.
 from typing import Any
 from dataclasses import dataclass
 
+from app.exceptions import StudentNotFoundError, FirebaseError, ServiceNotImplementedError
+
 
 @dataclass
 class StudentProfile:
@@ -58,7 +60,7 @@ class StudentService:
         # 1. Fetch document from 'students' collection (or equivalent)
         # 2. Map Firestore document to StudentProfile
         # 3. Handle missing document gracefully
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "StudentService.get_student_profile not yet implemented. "
             "Waiting for Firebase schema confirmation."
         )
@@ -92,19 +94,3 @@ class StudentService:
         data = profile.raw_data or {}
         data.pop("free_text_answers", None)
         return data
-
-
-class StudentNotFoundError(Exception):
-    """Raised when a student profile is not found in Firebase."""
-
-    def __init__(self, uid: str):
-        self.uid = uid
-        super().__init__(f"Student profile not found for UID: {uid}")
-
-
-class FirebaseError(Exception):
-    """Raised when Firebase operations fail."""
-
-    def __init__(self, message: str, original_error: Exception | None = None):
-        self.original_error = original_error
-        super().__init__(message)

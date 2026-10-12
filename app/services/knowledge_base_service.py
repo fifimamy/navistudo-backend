@@ -9,6 +9,8 @@ from typing import Any
 from dataclasses import dataclass
 from enum import Enum
 
+from app.exceptions import FirebaseError, ServiceNotImplementedError
+
 
 class RecommendationType(str, Enum):
     """Type of recommendation based on student's school year."""
@@ -68,7 +70,7 @@ class KnowledgeBaseService:
         # Expected flow:
         # 1. Query Firestore collection for options matching recommendation_type
         # 2. Map documents to KnowledgeBaseOption objects
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "KnowledgeBaseService.get_all_options not yet implemented. "
             "Waiting for knowledge base schema confirmation."
         )
@@ -123,7 +125,7 @@ class KnowledgeBaseService:
 
         # Minimum grade requirements
         if option.min_grades:
-            student_grades = student_profile.get("grades", {})
+            student_grades = student_profile.get("grades") or {}
             for subject, min_grade in option.min_grades.items():
                 if student_grades.get(subject, 0) < min_grade:
                     return False
@@ -143,15 +145,7 @@ class KnowledgeBaseService:
             KnowledgeBaseOption if found, None otherwise.
         """
         # TODO: Implement when knowledge base schema is confirmed
-        raise NotImplementedError(
+        raise ServiceNotImplementedError(
             "KnowledgeBaseService.get_option_by_id not yet implemented. "
             "Waiting for knowledge base schema confirmation."
         )
-
-
-class FirebaseError(Exception):
-    """Raised when Firebase operations fail."""
-
-    def __init__(self, message: str, original_error: Exception | None = None):
-        self.original_error = original_error
-        super().__init__(message)
