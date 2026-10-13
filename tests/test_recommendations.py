@@ -167,20 +167,62 @@ class TestGetRecommendationEndpoint:
         response = client.get("/api/v1/recommendations/analysis123")
         assert response.status_code == 401
 
-    def test_get_recommendation_not_implemented(self, client):
-        """GET endpoint returns 503 since not implemented yet."""
-        with patch("app.routes.recommendations.get_firebase_client") as mock_get_client:
-            mock_client = Mock()
-            mock_client.verify_id_token.return_value = {"uid": "student123"}
-            mock_get_client.return_value = mock_client
+    def test_get_recommendation_not_found(self, client):
+        """GET endpoint returns 404 when analysis doesn't exist or doesn't belong to student."""
+        with patch("app.routes.recommendations._get_recommendation_service") as mock_get_service:
+            # Mock Firebase auth via the existing mechanism
+            with patch("app.routes.recommendations.get_firebase_client") as mock_get_client:
+                mock_client = Mock()
+                mock_client.verify_id_token.return_value = {"uid": "student123"}
+                mock_get_client.return_value = mock_client
 
-            response = client.get(
-                "/api/v1/recommendations/analysis123",
-                headers={"Authorization": "Bearer valid_token"}
-            )
-            assert response.status_code == 503
-            data = response.get_json()
-            assert data["error"] == "not_implemented"
+                # Mock service to return None (not found)
+                mock_service = Mock()
+                mock_service.get_recommendation.return_value = None
+                mock_get_service.return_value = mock_service
+
+                response = client.get(
+                    "/api/v1/recommendations/analysis123",
+                    headers={"Authorization": "Bearer valid_token"}
+                )
+                assert response.status_code == 404
+                data = response.get_json()
+                assert data["error"] == "not_found"
+
+    def test_get_recommendation_success(self, client):
+        """GET endpoint returns 200 with recommendation data when found."""
+        from datetime import datetime
+        with patch("app.routes.recommendations._get_recommendation_service") as mock_get_service:
+            with patch("app.routes.recommendations.get_firebase_client") as mock_get_client:
+                mock_client = Mock()
+                mock_client.verify_id_token.return_value = {"uid": "student123"}
+                mock_get_client.return_value = mock_client
+
+                # Mock service to return a valid result
+                from app.services.recommendation_service import RecommendationResult
+                mock_result = RecommendationResult(
+                    analysis_id="analysis123",
+                    student_uid="student123",
+                    recommendation_type="university_major",
+                    recommendations=[{"id": "opt1", "name": "Test Major", "rank": 1, "reasoning": "Good fit"}],
+                    created_at=datetime.utcnow(),
+                    model_one_metadata={"model": "test"},
+                    model_two_metadata={"model": "test"},
+                )
+                mock_service = Mock()
+                mock_service.get_recommendation.return_value = mock_result
+                mock_get_service.return_value = mock_service
+
+                response = client.get(
+                    "/api/v1/recommendations/analysis123",
+                    headers={"Authorization": "Bearer valid_token"}
+                )
+                assert response.status_code == 200
+                data = response.get_json()
+                assert data["analysis_id"] == "analysis123"
+                assert data["recommendation_type"] == "university_major"
+                assert len(data["recommendations"]) == 1
+                assert data["recommendations"][0]["id"] == "opt1"
 
 
 class TestHealthEndpointStillWorks:

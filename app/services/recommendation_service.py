@@ -21,6 +21,7 @@ from app.schemas.model_one_schema import ModelOneInput, ModelOneOutput
 from app.schemas.model_two_schema import ModelTwoInput, ModelTwoOutput, RecommendationOption
 from app.services.knowledge_base_service import KnowledgeBaseService, RecommendationType
 from app.services.student_service import StudentService
+from app.services.results_service import ResultsService, StoredRecommendationResult
 from app.integrations.firebase_client import FirebaseClient, FirebaseAuthError, FirebaseConfigError
 from app.exceptions import (
     StudentNotFoundError,
@@ -29,6 +30,10 @@ from app.exceptions import (
     ModelOneError,
     ModelTwoError,
     ServiceNotImplementedError,
+)
+from app.services.recommendation_validation import (
+    validate_ranked_recommendations,
+    RecommendationValidationError,
 )
 
 
@@ -55,12 +60,16 @@ class RecommendationService:
         model_one: ModelOneClient,
         model_two: ModelTwoClient,
         firebase_client: FirebaseClient,
+        results_service: ResultsService | None = None,
+        max_results: int = 10,
     ):
         self._student_service = student_service
         self._kb_service = kb_service
         self._model_one = model_one
         self._model_two = model_two
         self._firebase = firebase_client
+        self._results_service = results_service
+        self._max_results = max_results
 
     def create_recommendation(self, student_uid: str) -> RecommendationResult:
         """Execute the full recommendation workflow for a student.
@@ -142,8 +151,16 @@ class RecommendationService:
         if not model_two_output.success:
             raise ModelTwoError(model_two_output.error or "Model 2 ranking failed")
 
-        # 8. Validate recommendations (all option_ids must exist in eligible_options)
-        self._validate_recommendations(model_two_output.recommendations, eligible_options)
+        # 8. Validate recommendations using the new comprehensive validator
+        eligible_ids = {opt.id for opt in eligible_options}
+        try:
+            validate_ranked_recommendations(
+                model_two_output.recommendations,
+                eligible_ids,
+                self._max_results,
+            )
+        except RecommendationValidationError as e:
+            raise ValidationError(str(e)) from e
 
         # 9. Persist result
         analysis_id = str(uuid4())
@@ -157,7 +174,23 @@ class RecommendationService:
             model_two_metadata=model_two_output.metadata,
         )
 
-        self._save_result(result)
+        # Save via ResultsService if available
+        if self._results_service is not None:
+            stored_result = StoredRecommendationResult(
+                analysis_id=analysis_id,
+                student_uid=student_uid,
+                recommendation_type=recommendation_type.value,
+                recommendations=[r.model_dump() for r in model_two_output.recommendations],
+                created_at=datetime.utcnow(),
+                model_one_metadata=model_one_output.metadata,
+                model_two_metadata=model_two_output.metadata,
+                model_one_raw_output=model_one_output.extracted_data,
+                model_two_raw_output=model_two_output.model_dump(),
+            )
+            self._results_service.save(stored_result)
+        else:
+            # Fallback to legacy _save_result if ResultsService not configured
+            self._save_result(result)
 
         return result
 
@@ -171,10 +204,25 @@ class RecommendationService:
         Returns:
             RecommendationResult if found and owned by student, None otherwise.
         """
-        # TODO: Implement when Firebase schema for results is confirmed
-        raise ServiceNotImplementedError(
-            "RecommendationService.get_recommendation not yet implemented. "
-            "Waiting for results collection schema confirmation."
+        if self._results_service is None:
+            raise ServiceNotImplementedError(
+                "RecommendationService.get_recommendation requires ResultsService. "
+                "Waiting for results collection schema confirmation."
+            )
+
+        stored = self._results_service.get(analysis_id, student_uid)
+        if stored is None:
+            return None
+
+        # Convert StoredRecommendationResult to RecommendationResult
+        return RecommendationResult(
+            analysis_id=stored.analysis_id,
+            student_uid=stored.student_uid,
+            recommendation_type=stored.recommendation_type,
+            recommendations=stored.recommendations,
+            created_at=stored.created_at,
+            model_one_metadata=stored.model_one_metadata,
+            model_two_metadata=stored.model_two_metadata,
         )
 
     def _determine_recommendation_type(self, school_year: int) -> RecommendationType:
@@ -206,6 +254,9 @@ class RecommendationService:
     ) -> None:
         """Ensure all recommended option_ids exist in eligible options.
 
+        Kept for backward compatibility. The comprehensive validation
+        in recommendation_validation.py is now used in create_recommendation.
+
         Args:
             recommendations: List of RankedRecommendation from Model 2.
             eligible_options: List of KnowledgeBaseOption that were passed to Model 2.
@@ -223,15 +274,15 @@ class RecommendationService:
                 )
 
     def _save_result(self, result: RecommendationResult) -> None:
-        """Save recommendation result to Firebase.
+        """Legacy fallback for saving recommendation result.
+
+        This is only called when ResultsService is not configured.
+        Prefer using ResultsService directly.
 
         Args:
             result: The complete recommendation result to persist.
         """
-        # TODO: Implement when results collection schema is confirmed
-        # Expected: write to 'recommendations' collection with analysis_id as document ID
-        # Include student_uid for ownership verification
         raise ServiceNotImplementedError(
-            "RecommendationService._save_result not yet implemented. "
-            "Waiting for results collection schema confirmation."
+            "RecommendationService._save_result not implemented. "
+            "Configure ResultsService to enable persistence."
         )

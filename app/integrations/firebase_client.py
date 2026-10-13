@@ -11,6 +11,7 @@ from functools import lru_cache
 
 import firebase_admin
 from firebase_admin import auth, credentials, firestore
+from google.cloud.firestore_v1 import FieldFilter
 
 
 class FirebaseClient:
@@ -119,6 +120,184 @@ class FirebaseClient:
             "private_key": private_key,
             "token_uri": "https://oauth2.googleapis.com/token",
         })
+
+    # ============================================================
+    # Firestore operations - Student profiles
+    # ============================================================
+    # Collection names - to be confirmed with team
+    STUDENTS_COLLECTION = os.environ.get("FIRESTORE_STUDENTS_COLLECTION", "students")
+    KNOWLEDGE_BASE_COLLECTION = os.environ.get("FIRESTORE_KB_COLLECTION", "knowledge_base")
+    RESULTS_COLLECTION = os.environ.get("FIRESTORE_RESULTS_COLLECTION", "recommendation_results")
+
+    def get_student_profile(self, uid: str) -> dict[str, Any] | None:
+        """Fetch a student's profile from Firestore.
+
+        Args:
+            uid: Firebase Auth UID of the student.
+
+        Returns:
+            Student profile dict if found, None otherwise.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            doc_ref = self._db.collection(self.STUDENTS_COLLECTION).document(uid)
+            doc = doc_ref.get()
+            if not doc.exists:
+                return None
+            return doc.to_dict()
+        except Exception as e:
+            raise FirebaseError(f"Failed to fetch student profile for UID {uid}: {e}") from e
+
+    def get_student_free_text_answers(self, uid: str) -> dict[str, str] | None:
+        """Fetch only the free-text answers from a student's profile.
+
+        Args:
+            uid: Firebase Auth UID of the student.
+
+        Returns:
+            Dict mapping question_id -> free-text answer string, or None if not found.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            doc_ref = self._db.collection(self.STUDENTS_COLLECTION).document(uid)
+            doc = doc_ref.get()
+            if not doc.exists:
+                return None
+            data = doc.to_dict()
+            return data.get("free_text_answers") if data else None
+        except Exception as e:
+            raise FirebaseError(f"Failed to fetch free-text answers for UID {uid}: {e}") from e
+
+    # ============================================================
+    # Firestore operations - Knowledge base
+    # ============================================================
+
+    def get_knowledge_base_options(self, recommendation_type: str) -> list[dict[str, Any]]:
+        """Fetch all knowledge-base options of a given type.
+
+        Args:
+            recommendation_type: "secondary_branch" or "university_major".
+
+        Returns:
+            List of option dicts.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            query = (self._db.collection(self.KNOWLEDGE_BASE_COLLECTION)
+                     .where(filter=FieldFilter("type", "==", recommendation_type)))
+            docs = query.stream()
+            options = []
+            for doc in docs:
+                data = doc.to_dict()
+                data["id"] = doc.id
+                options.append(data)
+            return options
+        except Exception as e:
+            raise FirebaseError(f"Failed to fetch knowledge base options for type {recommendation_type}: {e}") from e
+
+    def get_knowledge_base_option_by_id(self, option_id: str) -> dict[str, Any] | None:
+        """Fetch a single knowledge-base option by ID.
+
+        Args:
+            option_id: Unique identifier of the option.
+
+        Returns:
+            Option dict if found, None otherwise.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            doc_ref = self._db.collection(self.KNOWLEDGE_BASE_COLLECTION).document(option_id)
+            doc = doc_ref.get()
+            if not doc.exists:
+                return None
+            data = doc.to_dict()
+            data["id"] = doc.id
+            return data
+        except Exception as e:
+            raise FirebaseError(f"Failed to fetch knowledge base option {option_id}: {e}") from e
+
+    # ============================================================
+    # Firestore operations - Recommendation results
+    # ============================================================
+
+    def save_recommendation_result(self, result_data: dict[str, Any]) -> str:
+        """Save a recommendation result to Firestore.
+
+        Args:
+            result_data: The result data to persist (must include 'analysis_id' and 'student_uid').
+
+        Returns:
+            The analysis_id of the saved result.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            analysis_id = result_data["analysis_id"]
+            doc_ref = self._db.collection(self.RESULTS_COLLECTION).document(analysis_id)
+            doc_ref.set(result_data)
+            return analysis_id
+        except KeyError as e:
+            raise FirebaseError(f"Missing required field in result data: {e}") from e
+        except Exception as e:
+            raise FirebaseError(f"Failed to save recommendation result: {e}") from e
+
+    def get_recommendation_result(self, analysis_id: str, student_uid: str) -> dict[str, Any] | None:
+        """Retrieve a recommendation result by ID, verifying ownership.
+
+        Args:
+            analysis_id: The analysis ID to retrieve.
+            student_uid: The student's UID (must match the stored result).
+
+        Returns:
+            Result dict if found and owned by student, None otherwise.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            doc_ref = self._db.collection(self.RESULTS_COLLECTION).document(analysis_id)
+            doc = doc_ref.get()
+            if not doc.exists:
+                return None
+            data = doc.to_dict()
+            # Verify ownership
+            if data.get("student_uid") != student_uid:
+                return None
+            return data
+        except Exception as e:
+            raise FirebaseError(f"Failed to fetch recommendation result {analysis_id}: {e}") from e
+
+    def list_recommendation_results(self, student_uid: str, limit: int = 10) -> list[dict[str, Any]]:
+        """List recent recommendation results for a student.
+
+        Args:
+            student_uid: The student's UID.
+            limit: Maximum number of results to return.
+
+        Returns:
+            List of results, most recent first.
+
+        Raises:
+            FirebaseError: If Firestore operation fails.
+        """
+        try:
+            query = (self._db.collection(self.RESULTS_COLLECTION)
+                     .where(filter=FieldFilter("student_uid", "==", student_uid))
+                     .order_by("created_at", direction=firestore.Query.DESCENDING)
+                     .limit(limit))
+            docs = query.stream()
+            return [doc.to_dict() for doc in docs]
+        except Exception as e:
+            raise FirebaseError(f"Failed to list recommendation results for UID {student_uid}: {e}") from e
 
 
 @lru_cache(maxsize=1)

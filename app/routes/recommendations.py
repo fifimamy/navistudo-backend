@@ -24,6 +24,9 @@ from app.services.recommendation_service import (
     ValidationError,
     ServiceNotImplementedError,
 )
+from app.services.student_service import StudentService
+from app.services.knowledge_base_service import KnowledgeBaseService
+from app.services.results_service import ResultsService
 from app.integrations.model_one import ModelOneClient
 from app.integrations.model_two import ModelTwoClient
 
@@ -111,6 +114,7 @@ def _get_recommendation_service() -> RecommendationService:
     firebase_client = get_firebase_client()
     student_service = StudentService(firebase_client)
     kb_service = KnowledgeBaseService(firebase_client)
+    results_service = ResultsService(firebase_client)
     model_one = ModelOneClient()
     model_two = ModelTwoClient()
 
@@ -120,6 +124,7 @@ def _get_recommendation_service() -> RecommendationService:
         model_one=model_one,
         model_two=model_two,
         firebase_client=firebase_client,
+        results_service=results_service,
     )
 
 
@@ -239,11 +244,41 @@ def get_recommendation(analysis_id: str):
     except (Unauthorized, BadRequest):
         raise
 
-    # TODO: Implement when ResultsService is ready
-    # For now, return 503 with clear message
-    error_response = RecommendationErrorResponse(
-        error="not_implemented",
-        message="Retrieving past recommendations is not yet implemented",
-        details={"reason": "ResultsService.get not implemented"},
+    # Execute recommendation retrieval
+    service = _get_recommendation_service()
+
+    try:
+        result = service.get_recommendation(analysis_id, student_uid)
+    except ServiceNotImplementedError as e:
+        error_response = RecommendationErrorResponse(
+            error="not_implemented",
+            message="Retrieving past recommendations is not yet implemented",
+            details={"reason": str(e)},
+        )
+        return jsonify(error_response.model_dump()), 503
+    except (FirebaseError, FirebaseConfigError) as e:
+        raise Unauthorized("Database service unavailable") from e
+    except Exception as e:
+        error_response = RecommendationErrorResponse(
+            error="internal_error",
+            message="An unexpected error occurred",
+            details={"reason": str(e)},
+        )
+        return jsonify(error_response.model_dump()), 500
+
+    if result is None:
+        # Not found or doesn't belong to this student
+        raise NotFound(f"Recommendation analysis {analysis_id} not found")
+
+    # Build response
+    response = RecommendationResponse(
+        analysis_id=result.analysis_id,
+        student_uid=result.student_uid,
+        recommendation_type=result.recommendation_type,
+        recommendations=result.recommendations,
+        created_at=result.created_at,
+        model_one_metadata=result.model_one_metadata,
+        model_two_metadata=result.model_two_metadata,
     )
-    return jsonify(error_response.model_dump()), 503
+
+    return jsonify(response.model_dump()), 200

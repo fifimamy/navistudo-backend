@@ -8,6 +8,7 @@ from typing import Any
 from dataclasses import dataclass
 
 from app.exceptions import StudentNotFoundError, FirebaseError, ServiceNotImplementedError
+from app.integrations.firebase_client import FirebaseClient
 
 
 @dataclass
@@ -34,7 +35,7 @@ class StudentService:
     All Firebase access goes through this service.
     """
 
-    def __init__(self, firebase_client):
+    def __init__(self, firebase_client: FirebaseClient):
         """Initialize with a Firebase client instance.
 
         Args:
@@ -55,14 +56,24 @@ class StudentService:
             StudentNotFoundError: If no profile exists for the UID.
             FirebaseError: If Firebase is unavailable or returns an error.
         """
-        # TODO: Implement when Firebase schema is confirmed
-        # Expected flow:
-        # 1. Fetch document from 'students' collection (or equivalent)
-        # 2. Map Firestore document to StudentProfile
-        # 3. Handle missing document gracefully
-        raise ServiceNotImplementedError(
-            "StudentService.get_student_profile not yet implemented. "
-            "Waiting for Firebase schema confirmation."
+        data = self._firebase.get_student_profile(uid)
+        if data is None:
+            raise StudentNotFoundError(uid)
+
+        # Extract free_text_answers before creating raw_data
+        free_text_answers = data.get("free_text_answers")
+
+        # Create raw_data for structured profile (excluding free_text_answers)
+        raw_data = {k: v for k, v in data.items() if k != "free_text_answers"}
+
+        return StudentProfile(
+            uid=data.get("uid", uid),
+            school_year=data.get("school_year"),
+            current_branch=data.get("current_branch"),
+            wilaya=data.get("wilaya"),
+            grades=data.get("grades"),
+            free_text_answers=free_text_answers,
+            raw_data=raw_data,
         )
 
     def get_free_text_answers(self, uid: str) -> dict[str, str]:
@@ -73,11 +84,15 @@ class StudentService:
 
         Returns:
             Dict mapping question_id -> free-text answer string.
+
+        Raises:
+            StudentNotFoundError: If no profile exists for the UID.
+            FirebaseError: If Firebase is unavailable or returns an error.
         """
-        # TODO: Implement when Firebase schema is confirmed
-        # Can be optimized to fetch only the free-text fields if needed
-        profile = self.get_student_profile(uid)
-        return profile.free_text_answers or {}
+        answers = self._firebase.get_student_free_text_answers(uid)
+        if answers is None:
+            raise StudentNotFoundError(uid)
+        return answers or {}
 
     def get_structured_profile(self, uid: str) -> dict[str, Any]:
         """Get the student's structured profile (excluding free-text answers).
@@ -87,10 +102,10 @@ class StudentService:
 
         Returns:
             Dict with structured profile data suitable for Model 2 input.
+
+        Raises:
+            StudentNotFoundError: If no profile exists for the UID.
+            FirebaseError: If Firebase is unavailable or returns an error.
         """
-        # TODO: Implement when Firebase schema is confirmed
-        # Should exclude free_text_answers, include everything else
         profile = self.get_student_profile(uid)
-        data = profile.raw_data or {}
-        data.pop("free_text_answers", None)
-        return data
+        return profile.raw_data or {}

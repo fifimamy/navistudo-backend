@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from app.exceptions import FirebaseError, ServiceNotImplementedError
+from app.integrations.firebase_client import FirebaseClient
 
 
 class RecommendationType(str, Enum):
@@ -46,7 +47,7 @@ class KnowledgeBaseService:
     All eligibility filtering logic lives here, not in AI models.
     """
 
-    def __init__(self, firebase_client):
+    def __init__(self, firebase_client: FirebaseClient):
         """Initialize with a Firebase client instance.
 
         Args:
@@ -66,14 +67,30 @@ class KnowledgeBaseService:
         Raises:
             FirebaseError: If Firebase is unavailable or returns an error.
         """
-        # TODO: Implement when knowledge base schema is confirmed
-        # Expected flow:
-        # 1. Query Firestore collection for options matching recommendation_type
-        # 2. Map documents to KnowledgeBaseOption objects
-        raise ServiceNotImplementedError(
-            "KnowledgeBaseService.get_all_options not yet implemented. "
-            "Waiting for knowledge base schema confirmation."
-        )
+        options_data = self._firebase.get_knowledge_base_options(recommendation_type.value)
+        options = []
+        for data in options_data:
+            # Convert Firestore data to KnowledgeBaseOption
+            # Handle the type field - it comes as string from Firestore
+            type_str = data.get("type", recommendation_type.value)
+            try:
+                opt_type = RecommendationType(type_str)
+            except ValueError:
+                opt_type = recommendation_type
+
+            option = KnowledgeBaseOption(
+                id=data.get("id", ""),
+                name=data.get("name", ""),
+                type=opt_type,
+                description=data.get("description"),
+                required_branches=data.get("required_branches"),
+                required_wilayas=data.get("required_wilayas"),
+                min_grades=data.get("min_grades"),
+                max_capacity=data.get("max_capacity"),
+                raw_data=data,
+            )
+            options.append(option)
+        return options
 
     def filter_eligible_options(
         self,
@@ -143,9 +160,29 @@ class KnowledgeBaseService:
 
         Returns:
             KnowledgeBaseOption if found, None otherwise.
+
+        Raises:
+            FirebaseError: If Firebase is unavailable or returns an error.
         """
-        # TODO: Implement when knowledge base schema is confirmed
-        raise ServiceNotImplementedError(
-            "KnowledgeBaseService.get_option_by_id not yet implemented. "
-            "Waiting for knowledge base schema confirmation."
+        data = self._firebase.get_knowledge_base_option_by_id(option_id)
+        if data is None:
+            return None
+
+        type_str = data.get("type", "")
+        try:
+            opt_type = RecommendationType(type_str)
+        except ValueError:
+            # Default to UNIVERSITY_MAJOR if type is invalid
+            opt_type = RecommendationType.UNIVERSITY_MAJOR
+
+        return KnowledgeBaseOption(
+            id=data.get("id", option_id),
+            name=data.get("name", ""),
+            type=opt_type,
+            description=data.get("description"),
+            required_branches=data.get("required_branches"),
+            required_wilayas=data.get("required_wilayas"),
+            min_grades=data.get("min_grades"),
+            max_capacity=data.get("max_capacity"),
+            raw_data=data,
         )

@@ -33,7 +33,6 @@ class ResultsService:
 
     def __init__(self, firebase_client: FirebaseClient):
         self._firebase = firebase_client
-        self._collection = "recommendation_results"  # TODO: confirm collection name
 
     def save(self, result: StoredRecommendationResult) -> None:
         """Save a recommendation result.
@@ -44,14 +43,18 @@ class ResultsService:
         Raises:
             FirebaseError: If the write operation fails.
         """
-        # TODO: Implement when Firebase schema is confirmed
-        # Expected:
-        # doc_ref = self._firebase.db.collection(self._collection).document(result.analysis_id)
-        # doc_ref.set(result.__dict__)
-        raise ServiceNotImplementedError(
-            "ResultsService.save not yet implemented. "
-            "Waiting for Firebase results collection schema confirmation."
-        )
+        result_data = {
+            "analysis_id": result.analysis_id,
+            "student_uid": result.student_uid,
+            "recommendation_type": result.recommendation_type,
+            "recommendations": result.recommendations,
+            "created_at": result.created_at.isoformat() if isinstance(result.created_at, datetime) else result.created_at,
+            "model_one_metadata": result.model_one_metadata,
+            "model_two_metadata": result.model_two_metadata,
+            "model_one_raw_output": result.model_one_raw_output,
+            "model_two_raw_output": result.model_two_raw_output,
+        }
+        self._firebase.save_recommendation_result(result_data)
 
     def get(self, analysis_id: str, student_uid: str) -> StoredRecommendationResult | None:
         """Retrieve a recommendation result by ID, verifying ownership.
@@ -66,16 +69,25 @@ class ResultsService:
         Raises:
             FirebaseError: If the read operation fails.
         """
-        # TODO: Implement when Firebase schema is confirmed
-        # Expected:
-        # doc = self._firebase.db.collection(self._collection).document(analysis_id).get()
-        # if not doc.exists: return None
-        # data = doc.to_dict()
-        # if data.get("student_uid") != student_uid: return None
-        # return StoredRecommendationResult(**data)
-        raise ServiceNotImplementedError(
-            "ResultsService.get not yet implemented. "
-            "Waiting for Firebase results collection schema confirmation."
+        data = self._firebase.get_recommendation_result(analysis_id, student_uid)
+        if data is None:
+            return None
+
+        # Convert back to StoredRecommendationResult
+        created_at = data.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+
+        return StoredRecommendationResult(
+            analysis_id=data.get("analysis_id", analysis_id),
+            student_uid=data.get("student_uid", student_uid),
+            recommendation_type=data.get("recommendation_type", ""),
+            recommendations=data.get("recommendations", []),
+            created_at=created_at or datetime.utcnow(),
+            model_one_metadata=data.get("model_one_metadata"),
+            model_two_metadata=data.get("model_two_metadata"),
+            model_one_raw_output=data.get("model_one_raw_output"),
+            model_two_raw_output=data.get("model_two_raw_output"),
         )
 
     def list_for_student(self, student_uid: str, limit: int = 10) -> list[StoredRecommendationResult]:
@@ -87,9 +99,26 @@ class ResultsService:
 
         Returns:
             List of results, most recent first.
+
+        Raises:
+            FirebaseError: If the read operation fails.
         """
-        # TODO: Implement when Firebase schema is confirmed
-        raise ServiceNotImplementedError(
-            "ResultsService.list_for_student not yet implemented. "
-            "Waiting for Firebase results collection schema confirmation."
-        )
+        results_data = self._firebase.list_recommendation_results(student_uid, limit)
+        results = []
+        for data in results_data:
+            created_at = data.get("created_at")
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at)
+
+            results.append(StoredRecommendationResult(
+                analysis_id=data.get("analysis_id", ""),
+                student_uid=data.get("student_uid", student_uid),
+                recommendation_type=data.get("recommendation_type", ""),
+                recommendations=data.get("recommendations", []),
+                created_at=created_at or datetime.utcnow(),
+                model_one_metadata=data.get("model_one_metadata"),
+                model_two_metadata=data.get("model_two_metadata"),
+                model_one_raw_output=data.get("model_one_raw_output"),
+                model_two_raw_output=data.get("model_two_raw_output"),
+            ))
+        return results
