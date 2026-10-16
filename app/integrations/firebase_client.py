@@ -172,6 +172,57 @@ class FirebaseClient:
         except Exception as e:
             raise FirebaseError(f"Failed to fetch free-text answers for UID {uid}: {e}") from e
 
+    def save_student_profile(self, uid: str, profile_data: dict[str, Any]) -> str:
+        """Create or update a student profile document.
+
+        Args:
+            uid: Firebase Auth UID of the student (used as the document ID).
+            profile_data: Profile fields to persist (see ``to_student_document``).
+
+        Returns:
+            The UID of the saved profile.
+
+        Raises:
+            FirebaseError: If the write operation fails.
+        """
+        try:
+            doc_ref = self._db.collection(self.STUDENTS_COLLECTION).document(uid)
+            doc_ref.set(profile_data, merge=True)
+            return uid
+        except Exception as e:
+            raise FirebaseError(f"Failed to save student profile for UID {uid}: {e}") from e
+
+    # ============================================================
+    # Firestore connectivity check (read-only)
+    # ============================================================
+
+    # Sentinel document used only for the connectivity check. It is never
+    # written: reading a non-existent document is a single read with no side
+    # effects and no dependency on application data.
+    HEALTH_CHECK_DOCUMENT_ID = "__navistudo_health__"
+
+    def check_firestore_read(self, timeout: float = 5.0) -> bool:
+        """Perform a minimal, read-only Firestore connectivity check.
+
+        Reads a single (never-written) document from the students collection.
+        This is one document read — not a collection scan — and it creates,
+        updates, or deletes nothing.
+
+        Args:
+            timeout: Per-call timeout in seconds, passed to the Firestore SDK.
+
+        Returns:
+            True if the read completed successfully.
+
+        Raises:
+            Exception: If Firebase Admin is not initialized or the read fails.
+        """
+        doc_ref = self._db.collection(self.STUDENTS_COLLECTION).document(
+            self.HEALTH_CHECK_DOCUMENT_ID
+        )
+        doc_ref.get(timeout=timeout)
+        return True
+
     # ============================================================
     # Firestore operations - Knowledge base
     # ============================================================
