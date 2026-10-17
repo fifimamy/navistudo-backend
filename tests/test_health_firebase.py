@@ -8,7 +8,7 @@ Firebase is mocked, so these tests need no real credentials or network access.
 
 from unittest.mock import MagicMock, patch
 
-from app.integrations.firebase_client import FirebaseConfigError
+from app.integrations.firebase_client import FirebaseClient, FirebaseConfigError
 
 FIREBASE_HEALTH_PATH = "/api/v1/health/firebase"
 HEALTH_PATH = "/api/v1/health"
@@ -41,6 +41,37 @@ class TestFirebaseHealthEndpoint:
         _, kwargs = fake_client.check_firestore_read.call_args
         assert kwargs.get("timeout") is not None
         assert 0 < kwargs["timeout"] <= 10
+
+    def test_health_check_document_id_is_not_reserved(self):
+        """Firestore reserves IDs that begin and end with '__'.
+
+        Regression guard for the production InvalidArgument failure caused by
+        the reserved sentinel id ``__navistudo_health__``.
+        """
+        doc_id = FirebaseClient.HEALTH_CHECK_DOCUMENT_ID
+        assert doc_id
+        assert not (doc_id.startswith("__") and doc_id.endswith("__"))
+        assert doc_id not in (".", "..")
+        assert "/" not in doc_id
+
+    def test_check_firestore_read_uses_non_reserved_document_id(self):
+        """The read-only check uses a valid, non-reserved document id.
+
+        Regression guard for the production InvalidArgument failure caused by
+        the reserved sentinel id ``__navistudo_health__``.
+        """
+        # Bypass __init__ so no real Firebase Admin/Firestore is initialized.
+        client = FirebaseClient.__new__(FirebaseClient)
+        client._db = MagicMock()
+
+        client.check_firestore_read(timeout=5.0)
+
+        collection_name = client._db.collection.call_args.args[0]
+        assert collection_name == FirebaseClient.STUDENTS_COLLECTION
+        doc_id = client._db.collection.return_value.document.call_args.args[0]
+        assert doc_id == FirebaseClient.HEALTH_CHECK_DOCUMENT_ID
+        assert not (doc_id.startswith("__") and doc_id.endswith("__"))
+        client._db.collection.return_value.document.return_value.get.assert_called_once()
 
     def test_firebase_health_initialization_failure(self, client):
         """Missing/invalid credentials return a non-200 generic error."""

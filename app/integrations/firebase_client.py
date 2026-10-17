@@ -199,7 +199,9 @@ class FirebaseClient:
     # Sentinel document used only for the connectivity check. It is never
     # written: reading a non-existent document is a single read with no side
     # effects and no dependency on application data.
-    HEALTH_CHECK_DOCUMENT_ID = "__navistudo_health__"
+    # NOTE: Firestore reserves IDs that begin AND end with "__", so the
+    # sentinel must not use leading/trailing double underscores.
+    HEALTH_CHECK_DOCUMENT_ID = "navistudo_health_check"
 
     def check_firestore_read(self, timeout: float = 5.0) -> bool:
         """Perform a minimal, read-only Firestore connectivity check.
