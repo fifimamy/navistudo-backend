@@ -1,0 +1,33 @@
+{
+  "student_profile": {
+    "full_name": "Amina Benali",
+    "current_stage_id": "third_secondary",
+    "wilaya_code": "16",
+    "wilaya": "Alger",
+    "school_name": "Lycee Mustapha",
+    "subject_performance": [
+      {"subject_id": "mathematics", "min_score": 14.5, "max_score": 16.0},
+      {"subject_id": "physics", "min_score": 13.0, "max_score": 15.0},
+      {"subject_id": "french", "min_score": 12.0, "max_score": 14.0}
+    ]
+  },
+  "interests": {
+    "academic_interests": ["mathematics", "physics", "computer_science"],
+    "career_interests": ["software_engineering", "data_science"],
+    "activity_interests": ["programming", "robotics", "chess"],
+    "preferred_topics": ["algorithms", "artificial_intelligence", "space"],
+    "motivations": ["solving real problems", "building useful tools"]
+  },
+  "future_direction": {
+    "short_term_goals": ["complete secondary school", "improve physics"],
+    "long_term_goals": ["study computer science", "become a software engineer"],
+    "preferred_fields": ["computer_science", "engineering"],
+    "work_environment_preference": "structured"
+  },
+  "problem_preferences": {
+    "abstract_concrete_preference": "concrete",
+    "human_vs_system_preference": "system",
+    "preferred_problem_types": ["logical puzzles", "building things"],
+    "disliked_activities": ["memorization", "public speaking"]
+  }
+}

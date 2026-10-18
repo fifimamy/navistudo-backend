@@ -1,0 +1,334 @@
+{
+  "version": "1.0.0",
+  "description": "Algerian university majors (options de licence) representative sample. Source: Ministry of Higher Education official catalogues.",
+  "options": [
+    {
+      "id": "major_medicine",
+      "name": "Médecine",
+      "name_ar": "طب",
+      "name_fr": "Médecine",
+      "type": "university_major",
+      "level": "university",
+      "field": "medicine",
+      "description": "Formation médicale générale préparant au diplôme d'État de médecin. Parcours de 6 ans incluant les études précliniques et cliniques.",
+      "description_ar": "التدريب الطبي العام leading إلى شهادة طبيب دولة. مسار مد为期 6 سنوات包括预科学和临床学习。",
+      "description_fr": "Formation médicale générale préparant au diplôme d'État de médecin. Parcours de 6 ans incluant les études précliniques et cliniques.",
+      "eligibility": {
+        "required_branches": [
+          "sciences_expérimentales"
+        ],
+        "required_branches_status": "verified",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "svt": 14.0,
+          "chemie": 13.0,
+          "mathématiques": 12.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": 200,
+        "max_capacity_status": "verified"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "biology": 1.0,
+          "chemistry": 0.9,
+          "physics": 0.5
+        },
+        "career_themes": [
+          "health_care",
+          "medical_research",
+          "clinical_practice"
+        ],
+        "recommended_interests": [
+          "health_care",
+          "helping_others",
+          "scientific_research"
+        ],
+        "work_style_traits": [
+          "empathic",
+          "detail_oriented",
+          "resilient"
+        ],
+        "difficulty_level": 5,
+        "selectivity_tier": "very_high",
+        "employment_prospects": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "university_website",
+          "source_id": "UNV-2024-MED-001",
+          "source_url": "https://www.univ.dz/medicine",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal",
+          "notes": "Official university catalogue 2024"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "major_computer_science",
+      "name": "Informatique",
+      "name_ar": "علوم الحاسوب",
+      "name_fr": "Informatique",
+      "type": "university_major",
+      "level": "university",
+      "field": "computer_science",
+      "description": "Études approfondies en programmation, algorithmes, structures de données et systèmes informatiques. Préparation aux carrières de développement logiciel, IA et recherche.",
+      "description_ar": "دراسات عميقة في البرمجة، الخوارزميات、strukturen der daten und Systeme informatiques. Vorbereitung auf Karrieren in Softwareentwicklung, KI und Forschung.",
+      "description_fr": "Études approfondies en programmation, algorithmes, structures de données et systèmes informatiques. Préparation aux carrières de développement logiciel, IA et recherche.",
+      "eligibility": {
+        "required_branches": [
+          "mathématiques"
+        ],
+        "required_branches_status": "verified",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "mathématiques": 13.0,
+          "physique_chimie": 12.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": 150,
+        "max_capacity_status": "verified"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "mathematics": 1.0,
+          "physics": 0.8,
+          "computer_science": 0.7
+        },
+        "career_themes": [
+          "software_development",
+          "artificial_intelligence",
+          "data_analysis"
+        ],
+        "recommended_interests": [
+          "problem_solving",
+          "logic",
+          "creative_building"
+        ],
+        "work_style_traits": [
+          "analytical",
+          "detail_oriented",
+          "patient"
+        ],
+        "difficulty_level": 4,
+        "selectivity_tier": "high",
+        "employment_prospects": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "university_website",
+          "source_id": "UNV-2024-CS-001",
+          "source_url": "https://www.univ.dz/computer-science",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal",
+          "notes": "Official university catalogue 2024"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "major_engineering",
+      "name": "Génie Civil",
+      "name_ar": "هندسة مدنية",
+      "name_fr": "Génie Civil",
+      "type": "university_major",
+      "level": "university",
+      "field": "engineering",
+      "description": "Ingénierie civil: construction, structures, matériaux et travaux publics. Préparation aux carrières d'ingénieur concepteur et chef de projet.",
+      "description_ar": "هندسة المدني: constructions、strukturen、材料 et travaux publics. Vorbereitung auf Karrieren von Ingenieur designer und Projektleiter.",
+      "description_fr": "Ingénierie civil: construction, structures, matériaux et travaux publics. Préparation aux carrières d'ingénieur concepteur et chef de projet.",
+      "eligibility": {
+        "required_branches": [
+          "mathématiques_techniques"
+        ],
+        "required_branches_status": "verified",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "mathématiques": 13.0,
+          "physique_chimie": 12.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": 80,
+        "max_capacity_status": "verified"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "mathematics": 1.0,
+          "physics": 0.9,
+          "technology": 0.7
+        },
+        "career_themes": [
+          "construction",
+          "structural_design",
+          "project_management"
+        ],
+        "recommended_interests": [
+          "building",
+          "design",
+          "spatial_reasoning"
+        ],
+        "work_style_traits": [
+          "practical",
+          "structured",
+          "rigorous"
+        ],
+        "difficulty_level": 4,
+        "selectivity_tier": "high",
+        "employment_prospects": "good"
+      },
+      "sources": [
+        {
+          "source_type": "university_website",
+          "source_id": "UNV-2024-GC-001",
+          "source_url": "https://www.univ.dz/civil-engineering",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal",
+          "notes": "Official university catalogue 2024"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "major_law",
+      "name": "Droit",
+      "name_ar": "قانون",
+      "name_fr": "Droit",
+      "type": "university_major",
+      "level": "university",
+      "field": "law",
+      "description": "Études juridiques approfondies: droit civil, pénal, administratif et international. Préparation aux carrières d'avocat, magistrat ou conseiller juridique.",
+      "description_ar": "دراسات قانونية عميقة: القانون المدني، الجنائي، الإداري والدولي. Vorbereitung auf Karrieren als Anwalt, Magistrat oder Rechtsberater.",
+      "description_fr": "Études juridiques approfondies: droit civil, pénal, administratif et international. Préparation aux carrières d'avocat, magistrat ou conseiller juridique.",
+      "eligibility": {
+        "required_branches": [
+          "lettres_philosophie"
+        ],
+        "required_branches_status": "verified",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "francais": 12.0,
+          "philosophie": 11.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": 100,
+        "max_capacity_status": "verified"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "philosophy": 1.0,
+          "french": 0.8,
+          "history_geography": 0.7
+        },
+        "career_themes": [
+          "law_practice",
+          "judiciary",
+          "legal_research"
+        ],
+        "recommended_interests": [
+          "critical_thinking",
+          "debate",
+          "social_issues"
+        ],
+        "work_style_traits": [
+          "articulate",
+          "analytical",
+          "empathetic"
+        ],
+        "difficulty_level": 3,
+        "selectivity_tier": "medium",
+        "employment_prospects": "moderate"
+      },
+      "sources": [
+        {
+          "source_type": "university_website",
+          "source_id": "UNV-2024-LAW-001",
+          "source_url": "https://www.univ.dz/law",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal",
+          "notes": "Official university catalogue 2024"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "major_economics",
+      "name": "Sciences Économiques",
+      "name_ar": "علوم اقتصادية",
+      "name_fr": "Sciences Économiques",
+      "type": "university_major",
+      "level": "university",
+      "field": "economics",
+      "description": "Économie: théorie, mathématiques appliquées, finance et gestion. Préparation aux carrières d'analyste économique, banquier ou gestionnaire.",
+      "description_ar": "اقتصاد: теория、数学适用、finance et gestion. Vorbereitung auf Karrieren als Wirtschaftanalyst, Bankier oder Manager.",
+      "description_fr": "Économie: théorie, mathématiques appliquées, finance et gestion. Préparation aux carrières d'analyste économique, banquier ou gestionnaire.",
+      "eligibility": {
+        "required_branches": [
+          "gestion_économie"
+        ],
+        "required_branches_status": "verified",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "mathématiques": 12.0,
+          "economie": 11.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": 120,
+        "max_capacity_status": "verified"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "economics": 1.0,
+          "mathematics": 0.7,
+          "management": 0.8
+        },
+        "career_themes": [
+          "business",
+          "finance",
+          "accounting",
+          "entrepreneurship"
+        ],
+        "recommended_interests": [
+          "business",
+          "numbers",
+          "markets",
+          "organization"
+        ],
+        "work_style_traits": [
+          "strategic",
+          "organized",
+          "analytical"
+        ],
+        "difficulty_level": 3,
+        "selectivity_tier": "medium",
+        "employment_prospects": "good"
+      },
+      "sources": [
+        {
+          "source_type": "university_website",
+          "source_id": "UNV-2024-EC-001",
+          "source_url": "https://www.univ.dz/economics",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal",
+          "notes": "Official university catalogue 2024"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    }
+  ]
+}

@@ -11,7 +11,6 @@ from werkzeug.exceptions import BadRequest, Unauthorized, NotFound, Forbidden
 
 from app.integrations.firebase_client import get_firebase_client, FirebaseAuthError, FirebaseConfigError
 from app.schemas.recommendation_schema import (
-    RecommendationRequest,
     RecommendationResponse,
     RecommendationErrorResponse,
 )
@@ -25,10 +24,13 @@ from app.services.recommendation_service import (
     ServiceNotImplementedError,
 )
 from app.services.student_service import StudentService
-from app.services.knowledge_base_service import KnowledgeBaseService
+from app.services.json_knowledge_base_service import JsonKnowledgeBaseService
 from app.services.results_service import ResultsService
-from app.integrations.model_one import ModelOneClient
-from app.integrations.model_two import ModelTwoClient
+from app.services.frontend_adapter import adapt_frontend_payload
+from app.schemas.frontend_payload_schema import FrontendPayload, FrontendPayloadError
+from app.model_one_impl import ModelOneImplementation
+from app.model_two_impl import ModelTwoImplementation
+from app.services.response_adapter import build_summary, SCHEMA_VERSION
 
 
 recommendations_bp = Blueprint("recommendations", __name__)
@@ -113,10 +115,18 @@ def _get_recommendation_service() -> RecommendationService:
     """
     firebase_client = get_firebase_client()
     student_service = StudentService(firebase_client)
-    kb_service = KnowledgeBaseService(firebase_client)
+    kb_service = JsonKnowledgeBaseService()
     results_service = ResultsService(firebase_client)
-    model_one = ModelOneClient()
-    model_two = ModelTwoClient()
+
+    # Import AI client lazily to avoid import errors when not configured
+    try:
+        from app.ai_client import get_ai_client
+        ai_client = get_ai_client()
+    except Exception:
+        ai_client = None
+
+    model_one = ModelOneImplementation(provider_client=ai_client)
+    model_two = ModelTwoImplementation(provider_client=ai_client)
 
     return RecommendationService(
         student_service=student_service,
@@ -148,20 +158,36 @@ def create_recommendation():
     except (Unauthorized, BadRequest):
         raise
 
-    # Validate request body (currently empty, but kept for future extensibility)
-    try:
-        request_data = request.get_json(silent=True) or {}
-        RecommendationRequest(**request_data)  # Validates structure
-    except Exception as e:
-        raise BadRequest(f"Invalid request body: {e}")
+    # Parse and validate the request body. The frontend submits its
+    # questionnaire payload here. An empty body is still accepted for
+    # backward compatibility (the profile is then read from Firestore).
+    request_data = request.get_json(silent=True) or {}
+    adapted = None
+    if request_data:
+        if not isinstance(request_data, dict):
+            raise BadRequest("Request body must be a JSON object")
+        if "student_profile" in request_data:
+            try:
+                payload = FrontendPayload(**request_data)
+                adapted = adapt_frontend_payload(payload)
+            except FrontendPayloadError as e:
+                raise BadRequest(f"Invalid questionnaire payload: {e}")
+            except Exception as e:
+                raise BadRequest(f"Invalid questionnaire payload: {e}")
 
     # Execute recommendation workflow
     service = _get_recommendation_service()
 
     try:
+        if adapted is not None:
+            # Persist the submitted questionnaire before running the pipeline
+            # so the pipeline reads the same validated data back.
+            service.persist_student_profile(student_uid, adapted)
         result = service.create_recommendation(student_uid)
     except StudentNotFoundError as e:
         raise NotFound(str(e))
+    except FrontendPayloadError as e:
+        raise BadRequest(str(e))
     except (FirebaseError, FirebaseConfigError) as e:
         # Firebase configuration or connection error
         raise Unauthorized("Database service unavailable") from e
@@ -215,6 +241,9 @@ def create_recommendation():
         created_at=result.created_at,
         model_one_metadata=result.model_one_metadata,
         model_two_metadata=result.model_two_metadata,
+        profile_saved=adapted is not None,
+        schema_version=SCHEMA_VERSION,
+        summary=build_summary(result.recommendations, result.total_evaluated),
     )
 
     return jsonify(response.model_dump()), 201
@@ -279,6 +308,11 @@ def get_recommendation(analysis_id: str):
         created_at=result.created_at,
         model_one_metadata=result.model_one_metadata,
         model_two_metadata=result.model_two_metadata,
+        schema_version=SCHEMA_VERSION,
+        summary=build_summary(
+            result.recommendations,
+            result.total_evaluated or len(result.recommendations),
+        ),
     )
 
     return jsonify(response.model_dump()), 200

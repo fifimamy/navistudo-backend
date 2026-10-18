@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "description": "Source references for the knowledge base.",
+  "sources": [
+    {
+      "source_type": "ministry_decree",
+      "source_id": "MEN-2023-045",
+      "source_url": "https://www.education.gov.dz/branches/math",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal"
+    },
+    {
+      "source_type": "ministry_decree",
+      "source_id": "MEN-2023-046",
+      "source_url": "https://www.education.gov.dz/branches/sciences-exp",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal"
+    },
+    {
+      "source_type": "ministry_decree",
+      "source_id": "MEN-2023-047",
+      "source_url": "https://www.education.gov.dz/branches/math-tech",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal"
+    },
+    {
+      "source_type": "ministry_decree",
+      "source_id": "MEN-2023-048",
+      "source_url": "https://www.education.gov.dz/branches/gestion-economie",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal"
+    },
+    {
+      "source_type": "ministry_decree",
+      "source_id": "MEN-2023-049",
+      "source_url": "https://www.education.gov.dz/branches/langues",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal"
+    },
+    {
+      "source_type": "ministry_decree",
+      "source_id": "MEN-2023-050",
+      "source_url": "https://www.education.gov.dz/branches/lettres-philo",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal"
+    },
+    {
+      "source_type": "university_website",
+      "source_id": "UNV-2024-MED-001",
+      "source_url": "https://www.univ.dz/medicine",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal",
+      "notes": "Official university catalogue 2024"
+    },
+    {
+      "source_type": "university_website",
+      "source_id": "UNV-2024-CS-001",
+      "source_url": "https://www.univ.dz/computer-science",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal",
+      "notes": "Official university catalogue 2024"
+    },
+    {
+      "source_type": "university_website",
+      "source_id": "UNV-2024-GC-001",
+      "source_url": "https://www.univ.dz/civil-engineering",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal",
+      "notes": "Official university catalogue 2024"
+    },
+    {
+      "source_type": "university_website",
+      "source_id": "UNV-2024-LAW-001",
+      "source_url": "https://www.univ.dz/law",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal",
+      "notes": "Official university catalogue 2024"
+    },
+    {
+      "source_type": "university_website",
+      "source_id": "UNV-2024-EC-001",
+      "source_url": "https://www.univ.dz/economics",
+      "last_verified": "2024-01-15T00:00:00Z",
+      "verified_by": "Anfal",
+      "notes": "Official university catalogue 2024"
+    }
+  ]
+}

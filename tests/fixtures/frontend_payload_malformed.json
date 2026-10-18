@@ -1,0 +1,13 @@
+{
+  "student_profile": {
+    "full_name": "Test Student",
+    "current_stage_id": "third_secondary",
+    "subject_performance": [
+      {"subject_id": "mathematics", "min_score": 10.0, "max_score": 12.0}
+    ]
+  },
+  "problem_preferences": {
+    "abstract_concrete_preference": "concrete"
+    "human_vs_system_preference": "system"
+  }
+}

@@ -15,8 +15,8 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from app.integrations.model_one import ModelOneClient
-from app.integrations.model_two import ModelTwoClient
+from app.model_one_impl import ModelOneImplementation
+from app.model_two_impl import ModelTwoImplementation
 from app.schemas.model_one_schema import ModelOneInput, ModelOneOutput
 from app.schemas.model_two_schema import ModelTwoInput, ModelTwoOutput, RecommendationOption
 from app.services.knowledge_base_service import KnowledgeBaseService, RecommendationType
@@ -35,6 +35,7 @@ from app.services.recommendation_validation import (
     validate_ranked_recommendations,
     RecommendationValidationError,
 )
+from app.services.response_adapter import enrich_recommendation
 
 
 @dataclass
@@ -48,6 +49,7 @@ class RecommendationResult:
     created_at: datetime
     model_one_metadata: dict[str, Any] | None
     model_two_metadata: dict[str, Any] | None
+    total_evaluated: int = 0  # Number of eligible options considered
 
 
 class RecommendationService:
@@ -57,8 +59,8 @@ class RecommendationService:
         self,
         student_service: StudentService,
         kb_service: KnowledgeBaseService,
-        model_one: ModelOneClient,
-        model_two: ModelTwoClient,
+        model_one: Any,
+        model_two: Any,
         firebase_client: FirebaseClient,
         results_service: ResultsService | None = None,
         max_results: int = 10,
@@ -113,9 +115,15 @@ class RecommendationService:
             )
 
         # 4. Prepare Model 1 input (free-text answers only)
+        # Merge the default question context with any per-student context
+        # persisted from the frontend payload.
+        question_context = dict(self._get_question_context())
+        if profile.question_context:
+            question_context.update(profile.question_context)
+
         model_one_input = ModelOneInput(
             free_text_answers=profile.free_text_answers or {},
-            question_context=self._get_question_context(),  # TODO: define context source
+            question_context=question_context,
             school_year=profile.school_year,
             current_branch=profile.current_branch,
         )
@@ -128,15 +136,19 @@ class RecommendationService:
 
         # 6. Prepare Model 2 input
         # Convert KnowledgeBaseOption objects to RecommendationOption schema
-        eligible_for_model = [
-            RecommendationOption(
-                id=opt.id,
-                name=opt.name,
-                description=opt.description,
-                **(opt.raw_data or {}),
+        # Filter out keys already passed explicitly to avoid duplicate kwargs
+        eligible_for_model = []
+        for opt in eligible_options:
+            raw = opt.raw_data or {}
+            extra = {k: v for k, v in raw.items() if k not in ("id", "name", "description")}
+            eligible_for_model.append(
+                RecommendationOption(
+                    id=opt.id,
+                    name=opt.name,
+                    description=opt.description,
+                    **extra,
+                )
             )
-            for opt in eligible_options
-        ]
 
         model_two_input = ModelTwoInput(
             student_profile=self._student_service.get_structured_profile(student_uid),
@@ -162,16 +174,30 @@ class RecommendationService:
         except RecommendationValidationError as e:
             raise ValidationError(str(e)) from e
 
+        # Enrich each ranked recommendation with the knowledge-base option's
+        # display metadata so the API response can expose id/name/description.
+        option_meta = {opt.id: opt for opt in eligible_options}
+        recommendations: list[dict[str, Any]] = []
+        for rec in model_two_output.recommendations:
+            meta = option_meta.get(rec.option_id)
+            base = rec.model_dump()
+            base["id"] = rec.option_id
+            base["name"] = meta.name if meta is not None else rec.option_id
+            base["name_ar"] = getattr(meta, "name_ar", None) if meta is not None else None
+            base["description"] = meta.description if meta is not None else None
+            recommendations.append(enrich_recommendation(base, meta))
+
         # 9. Persist result
         analysis_id = str(uuid4())
         result = RecommendationResult(
             analysis_id=analysis_id,
             student_uid=student_uid,
             recommendation_type=recommendation_type.value,
-            recommendations=[r.model_dump() for r in model_two_output.recommendations],
+            recommendations=recommendations,
             created_at=datetime.utcnow(),
             model_one_metadata=model_one_output.metadata,
             model_two_metadata=model_two_output.metadata,
+            total_evaluated=len(eligible_options),
         )
 
         # Save via ResultsService if available
@@ -180,7 +206,7 @@ class RecommendationService:
                 analysis_id=analysis_id,
                 student_uid=student_uid,
                 recommendation_type=recommendation_type.value,
-                recommendations=[r.model_dump() for r in model_two_output.recommendations],
+                recommendations=recommendations,
                 created_at=datetime.utcnow(),
                 model_one_metadata=model_one_output.metadata,
                 model_two_metadata=model_two_output.metadata,
@@ -193,6 +219,26 @@ class RecommendationService:
             self._save_result(result)
 
         return result
+
+    def persist_student_profile(self, student_uid: str, adapted: Any) -> None:
+        """Persist a validated frontend payload as the student's profile.
+
+        The frontend submits its questionnaire payload to the API; this method
+        writes it to Firestore using the documented schema so the pipeline can
+        read the same data back through ``get_student_profile``.
+
+        Args:
+            student_uid: Firebase Auth UID of the authenticated student.
+            adapted: A ``FrontendAdapted`` produced by ``adapt_frontend_payload``.
+
+        Raises:
+            FirebaseError: If the write operation fails.
+        """
+        from app.services.frontend_adapter import to_student_document
+
+        document = to_student_document(adapted)
+        document["uid"] = student_uid
+        self._student_service.save_profile(student_uid, document)
 
     def get_recommendation(self, analysis_id: str, student_uid: str) -> RecommendationResult | None:
         """Retrieve a previous recommendation result.
@@ -241,11 +287,16 @@ class RecommendationService:
     def _get_question_context(self) -> dict[str, str]:
         """Get context for free-text questions.
 
-        This could come from a config file, knowledge base, or be hardcoded.
-        For now, returns empty dict - to be implemented when questions are finalized.
+        Provides context for known question fields used in the MVP.
+        Additional questions can be added here when the question set is finalized.
         """
-        # TODO: Implement when question set is finalized
-        return {}
+        return {
+            "q_goal": "What are your academic and career goals?",
+            "q_interest": "What subjects or activities do you enjoy most?",
+            "q_strength": "What are your academic strengths?",
+            "q_difficulty": "What subjects or areas do you find challenging?",
+            "q_work_env": "What type of work or study environment do you prefer?",
+        }
 
     def _validate_recommendations(
         self,

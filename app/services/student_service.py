@@ -25,6 +25,7 @@ class StudentProfile:
     wilaya: str | None = None
     grades: dict[str, float] | None = None  # subject -> grade
     free_text_answers: dict[str, str] | None = None  # question_id -> answer
+    question_context: dict[str, str] | None = None  # question_id -> description
     # Additional fields as needed
     raw_data: dict[str, Any] | None = None
 
@@ -60,11 +61,16 @@ class StudentService:
         if data is None:
             raise StudentNotFoundError(uid)
 
-        # Extract free_text_answers before creating raw_data
+        # Extract free-text answers and question context before creating raw_data
         free_text_answers = data.get("free_text_answers")
+        question_context = data.get("question_context")
 
-        # Create raw_data for structured profile (excluding free_text_answers)
-        raw_data = {k: v for k, v in data.items() if k != "free_text_answers"}
+        # Create raw_data for structured profile (excluding free-text fields)
+        raw_data = {
+            k: v
+            for k, v in data.items()
+            if k not in ("free_text_answers", "question_context")
+        }
 
         return StudentProfile(
             uid=data.get("uid", uid),
@@ -73,6 +79,7 @@ class StudentService:
             wilaya=data.get("wilaya"),
             grades=data.get("grades"),
             free_text_answers=free_text_answers,
+            question_context=question_context,
             raw_data=raw_data,
         )
 
@@ -109,3 +116,18 @@ class StudentService:
         """
         profile = self.get_student_profile(uid)
         return profile.raw_data or {}
+
+    def save_profile(self, uid: str, profile_data: dict[str, Any]) -> str:
+        """Persist a student profile document (create or update).
+
+        Args:
+            uid: Firebase Auth UID of the student (used as the document ID).
+            profile_data: Profile fields to persist.
+
+        Returns:
+            The UID of the saved profile.
+
+        Raises:
+            FirebaseError: If Firebase is unavailable or returns an error.
+        """
+        return self._firebase.save_student_profile(uid, profile_data)

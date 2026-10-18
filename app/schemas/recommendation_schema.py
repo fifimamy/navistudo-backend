@@ -49,6 +49,19 @@ class RecommendationResponse(BaseModel):
     model_two_metadata: dict[str, Any] | None = Field(
         default=None, description="Optional metadata from Model 2."
     )
+    profile_saved: bool = Field(
+        default=False,
+        description="Whether a submitted questionnaire payload was persisted for this student.",
+    )
+    # Frontend envelope fields (see frontend src/types/contract.ts).
+    schema_version: str = Field(
+        default="1.0.0",
+        description="Contract version of the frontend response envelope.",
+    )
+    summary: dict[str, Any] | None = Field(
+        default=None,
+        description="Frontend summary block (primary_strength, suggested_focus, total_evaluated).",
+    )
 
 
 class RecommendationErrorResponse(BaseModel):

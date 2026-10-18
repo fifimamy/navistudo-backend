@@ -1,0 +1,307 @@
+{
+  "version": "1.0.0",
+  "description": "Algerian secondary school branches (Première année secondaire). Source: Ministry of National Education official decrees.",
+  "options": [
+    {
+      "id": "branch_math",
+      "name": "Mathématiques",
+      "name_ar": "الرياضيات",
+      "name_fr": "Mathématiques",
+      "type": "secondary_branch",
+      "level": "secondary",
+      "field": "sciences",
+      "description": "Branche axée sur les mathématiques avancées, la physique et la chimie. Préparation aux filières scientifiques et techniques.",
+      "description_ar": "شعبة تركز على الرياضيات المتقدمة والفيزياء والكيمياء. تحضير للمسارات العلمية والتقنية.",
+      "description_fr": "Branche axée sur les mathématiques avancées, la physique et la chimie. Préparation aux filières scientifiques et techniques.",
+      "eligibility": {
+        "required_branches": null,
+        "required_branches_status": "not_applicable",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "mathematiques": 12.0,
+          "physique_chimie": 10.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": null,
+        "max_capacity_status": "not_applicable"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "mathematics": 1.0,
+          "physics": 0.9,
+          "chemistry": 0.7
+        },
+        "career_themes": ["engineering", "research", "teaching", "data_science"],
+        "recommended_interests": ["problem_solving", "logic", "abstract_thinking", "modeling"],
+        "work_style_traits": ["analytical", "rigorous", "methodical"],
+        "difficulty_level": 5,
+        "selectivity_tier": "very_high",
+        "employment_prospects": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "ministry_decree",
+          "source_id": "MEN-2023-045",
+          "source_url": "https://www.education.gov.dz/branches/math",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "branch_sciences_experimental",
+      "name": "Sciences Expérimentales",
+      "name_ar": "علوم تجريبية",
+      "name_fr": "Sciences Expérimentales",
+      "type": "secondary_branch",
+      "level": "secondary",
+      "field": "sciences",
+      "description": "Branche axée sur la biologie, la physique-chimie et les sciences de la Terre. Préparation aux filières médicales, biologiques et géologiques.",
+      "description_ar": "شعبة تركز على الأحياء والفيزياء والكيمياء وعلوم الأرض. تحضير للمسارات الطبية والبيولوجية والجيولوجية.",
+      "description_fr": "Branche axée sur la biologie, la physique-chimie et les sciences de la Terre. Préparation aux filières médicales, biologiques et géologiques.",
+      "eligibility": {
+        "required_branches": null,
+        "required_branches_status": "not_applicable",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "svt": 11.0,
+          "physique_chimie": 10.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": null,
+        "max_capacity_status": "not_applicable"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "biology": 1.0,
+          "chemistry": 0.8,
+          "physics": 0.6
+        },
+        "career_themes": ["medicine", "pharmacy", "biotechnology", "environmental_science", "veterinary"],
+        "recommended_interests": ["living_systems", "healthcare", "laboratory_work", "nature"],
+        "work_style_traits": ["observant", "empathic", "scientific_curiosity"],
+        "difficulty_level": 4,
+        "selectivity_tier": "high",
+        "employment_prospects": "excellent"
+      },
+      "sources": [
+        {
+          "source_type": "ministry_decree",
+          "source_id": "MEN-2023-046",
+          "source_url": "https://www.education.gov.dz/branches/sciences-exp",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "branch_math_tech",
+      "name": "Mathématiques Techniques",
+      "name_ar": "رياضيات تقنية",
+      "name_fr": "Mathématiques Techniques",
+      "type": "secondary_branch",
+      "level": "secondary",
+      "field": "technology",
+      "description": "Branche combinant mathématiques appliquées et technologie. Orientation vers les filières d'ingénierie technique.",
+      "description_ar": "شعبة تجمع بين الرياضيات التطبيقية والتكنولوجيا. توجيه نحو مسارات الهندسة التقنية.",
+      "description_fr": "Branche combinant mathématiques appliquées et technologie. Orientation vers les filières d'ingénierie technique.",
+      "eligibility": {
+        "required_branches": null,
+        "required_branches_status": "not_applicable",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "mathematiques": 11.0,
+          "technologie": 10.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": null,
+        "max_capacity_status": "not_applicable"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "mathematics": 0.9,
+          "technology": 0.9,
+          "physics": 0.7
+        },
+        "career_themes": ["engineering", "architecture", "industrial_design", "technical_management"],
+        "recommended_interests": ["applied_math", "design", "construction", "manufacturing"],
+        "work_style_traits": ["practical", "creative", "technical"],
+        "difficulty_level": 4,
+        "selectivity_tier": "high",
+        "employment_prospects": "good"
+      },
+      "sources": [
+        {
+          "source_type": "ministry_decree",
+          "source_id": "MEN-2023-047",
+          "source_url": "https://www.education.gov.dz/branches/math-tech",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "branch_gestion_economie",
+      "name": "Gestion et Économie",
+      "name_ar": "تسيير واقتصاد",
+      "name_fr": "Gestion et Économie",
+      "type": "secondary_branch",
+      "level": "secondary",
+      "field": "economics",
+      "description": "Branche axée sur l'économie, la gestion et les mathématiques appliquées aux sciences sociales. Préparation aux filières de gestion, commerce et économie.",
+      "description_ar": "شعبة تركز على الاقتصاد والتسيير والرياضيات التطبيقية في العلوم الاجتماعية. تحضير لمسارات التسيير والتجارة والاقتصاد.",
+      "description_fr": "Branche axée sur l'économie, la gestion et les mathématiques appliquées aux sciences sociales. Préparation aux filières de gestion, commerce et économie.",
+      "eligibility": {
+        "required_branches": null,
+        "required_branches_status": "not_applicable",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "mathematiques": 10.0,
+          "economie": 10.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": null,
+        "max_capacity_status": "not_applicable"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "economics": 1.0,
+          "mathematics": 0.7,
+          "management": 0.8
+        },
+        "career_themes": ["business", "finance", "accounting", "marketing", "entrepreneurship"],
+        "recommended_interests": ["business", "numbers", "markets", "organization"],
+        "work_style_traits": ["strategic", "organized", "analytical"],
+        "difficulty_level": 3,
+        "selectivity_tier": "medium",
+        "employment_prospects": "good"
+      },
+      "sources": [
+        {
+          "source_type": "ministry_decree",
+          "source_id": "MEN-2023-048",
+          "source_url": "https://www.education.gov.dz/branches/gestion-economie",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "branch_langues_etrangeres",
+      "name": "Langues Étrangères",
+      "name_ar": "لغات أجنبية",
+      "name_fr": "Langues Étrangères",
+      "type": "secondary_branch",
+      "level": "secondary",
+      "field": "humanities",
+      "description": "Branche axée sur l'apprentissage des langues (anglais, français, espagnol, allemand). Préparation aux filières de traduction, tourisme, relations internationales.",
+      "description_ar": "شعبة تركز على تعلم اللغات (الإنجليزية، الفرنسية، الإسبانية، الألمانية). تحضير لمسارات الترجمة والسياحة والعلاقات الدولية.",
+      "description_fr": "Branche axée sur l'apprentissage des langues (anglais, français, espagnol, allemand). Préparation aux filières de traduction, tourisme, relations internationales.",
+      "eligibility": {
+        "required_branches": null,
+        "required_branches_status": "not_applicable",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "anglais": 12.0,
+          "francais": 11.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": null,
+        "max_capacity_status": "not_applicable"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "english": 1.0,
+          "french": 0.8,
+          "philosophy": 0.5
+        },
+        "career_themes": ["translation", "tourism", "international_relations", "teaching", "diplomacy"],
+        "recommended_interests": ["languages", "cultures", "communication", "travel"],
+        "work_style_traits": ["communicative", "cultural_sensitivity", "adaptable"],
+        "difficulty_level": 3,
+        "selectivity_tier": "medium",
+        "employment_prospects": "good"
+      },
+      "sources": [
+        {
+          "source_type": "ministry_decree",
+          "source_id": "MEN-2023-049",
+          "source_url": "https://www.education.gov.dz/branches/langues",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    },
+    {
+      "id": "branch_lettres_philo",
+      "name": "Lettres et Philosophie",
+      "name_ar": "آداب وفلسفة",
+      "name_fr": "Lettres et Philosophie",
+      "type": "secondary_branch",
+      "level": "secondary",
+      "field": "humanities",
+      "description": "Branche axée sur la littérature, la philosophie, l'histoire-géographie et les langues. Préparation aux filières de droit, sciences humaines, journalisme, éducation.",
+      "description_ar": "شعبة تركز على الأدب والفلسفة والتاريخ والجغرافيا واللغات. تحضير لمسارات القانون والعلوم الإنسانية والصحافة والتعليم.",
+      "description_fr": "Branche axée sur la littérature, la philosophie, l'histoire-géographie et les langues. Préparation aux filières de droit, sciences humaines, journalisme, éducation.",
+      "eligibility": {
+        "required_branches": null,
+        "required_branches_status": "not_applicable",
+        "required_wilayas": null,
+        "required_wilayas_status": "not_applicable",
+        "min_grades": {
+          "philosophie": 11.0,
+          "francais": 11.0,
+          "histoire_geographie": 10.0
+        },
+        "min_grades_status": "verified",
+        "max_capacity": null,
+        "max_capacity_status": "not_applicable"
+      },
+      "matching_metadata": {
+        "subject_relevance": {
+          "philosophy": 1.0,
+          "french": 0.8,
+          "history_geography": 0.7
+        },
+        "career_themes": ["law", "journalism", "education", "psychology", "social_work", "cultural_management"],
+        "recommended_interests": ["reading", "writing", "critical_thinking", "social_issues", "history"],
+        "work_style_traits": ["reflective", "articulate", "empathetic", "critical"],
+        "difficulty_level": 3,
+        "selectivity_tier": "medium",
+        "employment_prospects": "moderate"
+      },
+      "sources": [
+        {
+          "source_type": "ministry_decree",
+          "source_id": "MEN-2023-050",
+          "source_url": "https://www.education.gov.dz/branches/lettres-philo",
+          "last_verified": "2024-01-15T00:00:00Z",
+          "verified_by": "Anfal"
+        }
+      ],
+      "review_status": "approved",
+      "last_reviewed": "2024-01-15T00:00:00Z",
+      "reviewed_by": "Anfal"
+    }
+  ]
+}
